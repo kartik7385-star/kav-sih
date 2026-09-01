@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MediKiosk — AI Clinical Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal-900:#0b3d3d; --teal-800:#0e4f4f; --teal-700:#12665f; --teal-50:#eaf5f3;
+    --amber-400:#f5b93d; --amber-600:#b8720f;
+    --cream:#faf7f1; --ink:#1f2a2a; --slate-500:#64748b; --slate-300:#cbd5e1;
+    --red:#dc2626; --green:#059669;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2,.headfont{font-family:'Poppins',sans-serif;}
+  #app{max-width:760px;margin:0 auto;padding:20px 16px 60px;}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-icon{width:38px;height:38px;border-radius:10px;background:var(--teal-700);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .brand-title{font-weight:700;color:var(--teal-900);line-height:1;font-size:18px;}
+  .brand-sub{font-size:11px;color:#0e4f4f99;margin-top:2px;}
+  .btn-ghost{font-size:13px;font-weight:600;color:var(--teal-800);border:1px solid #0e4f4f4d;border-radius:10px;padding:6px 12px;background:#fff;cursor:pointer;}
+  .stepper{background:#0f172a;border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:8px;overflow-x:auto;}
+  .step{padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;color:#64748b;font-family:'Poppins',sans-serif;}
+  .step.active{background:var(--amber-400);color:#1f2a2a;}
+  .step.done{background:#05966930;color:#6ee7b7;}
+  .step-line{height:1px;width:20px;background:#334155;flex-shrink:0;}
+  .alert-red{margin-top:14px;background:var(--red);color:#fff;border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .alert-amber{margin-top:14px;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:12px;padding:12px 16px;font-size:14px;display:flex;justify-content:space-between;align-items:center;}
+  .card{background:#fff;border:1px solid #0e4f4f1a;border-radius:18px;padding:22px;margin-top:16px;box-shadow:0 1px 2px rgba(0,0,0,.03);}
+  .card h1{font-size:20px;color:var(--teal-900);margin:0 0 4px;}
+  .muted{color:#64748b;font-size:14px;margin-bottom:16px;}
+  label.field-label{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px;}
+  input[type=text],input[type=number],textarea{width:100%;border:1px solid var(--slate-300);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;}
+  textarea{resize:vertical;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:140px;}
+  .chip-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .chip{padding:8px 14px;border-radius:10px;font-size:14px;font-weight:500;border:1px solid var(--slate-300);background:#fff;cursor:pointer;color:#334155;}
+  .chip.active{background:var(--teal-700);color:#fff;border-color:var(--teal-700);}
+  .btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--teal-700);color:#fff;font-weight:600;font-size:15px;border:none;border-radius:12px;padding:13px 20px;cursor:pointer;width:100%;}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-primary:hover:not(:disabled){background:var(--teal-800);}
+  .link-btn{background:none;border:none;color:var(--teal-700);font-weight:600;font-size:13px;cursor:pointer;padding:0;display:inline-flex;align-items:center;gap:6px;}
+  .consent-row{display:flex;gap:10px;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;align-items:flex-start;cursor:pointer;}
+  .complaint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:16px;}
+  .complaint-btn{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px solid #e2e8f0;border-radius:14px;padding:18px 6px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;background:#fff;}
+  .complaint-btn.active{border-color:var(--teal-700);background:var(--teal-50);color:var(--teal-900);}
+  .complaint-icon{font-size:26px;}
+  .chat-window{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:14px;padding-right:4px;}
+  .bubble{max-width:82%;padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.4;}
+  .bubble.ai{background:var(--teal-50);color:var(--teal-900);align-self:flex-start;}
+  .bubble.user{background:#1e293b;color:#fff;align-self:flex-end;}
+  .thinking{color:#94a3b8;font-size:13px;display:flex;align-items:center;gap:6px;}
+  .input-row{display:flex;gap:8px;align-items:center;}
+  .mic-btn{flex-shrink:0;width:44px;height:44px;border-radius:50%;border:1px solid var(--slate-300);background:#fff;font-size:18px;cursor:pointer;}
+  .mic-btn.listening{background:var(--red);color:#fff;border-color:var(--red);}
+  .pill-input{flex:1;border:1px solid var(--slate-300);border-radius:24px;padding:10px 16px;font-size:14px;}
+  .send-btn{flex-shrink:0;width:46px;height:46px;border-radius:50%;border:none;background:var(--teal-700);color:#fff;font-size:16px;cursor:pointer;}
+  .upload-zone{display:flex;flex-direction:column;align-items:center;gap:6px;border:2px dashed #5eead4;border-radius:14px;padding:30px 10px;color:var(--teal-700);cursor:pointer;margin-bottom:16px;font-weight:600;font-size:14px;text-align:center;}
+  .upload-zone input{display:none;}
+  .doc-item{display:flex;gap:12px;border:1px solid #e2e8f0;border-radius:14px;padding:10px;margin-bottom:10px;align-items:flex-start;}
+  .doc-item img{width:60px;height:60px;object-fit:cover;border-radius:8px;flex-shrink:0;}
+  .doc-flag{color:#b45309;font-weight:700;font-size:12px;display:flex;align-items:center;gap:4px;margin-top:4px;}
+  .token-box{background:#0f172a;color:var(--amber-400);font-size:34px;font-weight:700;text-align:center;padding:18px;border-radius:14px;letter-spacing:.1em;margin:20px 0;font-family:'Poppins',sans-serif;}
+  .queue-item{border:1px solid #e2e8f0;border-radius:14px;margin-bottom:10px;overflow:hidden;}
+  .queue-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;}
+  .queue-body{padding:0 16px 16px;border-top:1px solid #f1f5f9;font-size:14px;}
+  .queue-body div{margin-top:8px;}
+  .field-line b{color:#475569;}
+  .checkbox-row{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;}
+  .center{text-align:center;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ======================================================================
+   MediKiosk — AI Clinical History & Document Intake Platform
+   SIH 2026 · Problem 26047 · Ministry of Ayush
+   Plain HTML / CSS / JS — no build step required
+   ====================================================================== */
+
+const MODEL = "claude-sonnet-4-6";
+
+// Point this at your deployed backend from /api/chat.js — see DEPLOY_README.md.
+// Example after deploying on Vercel: "https://medikiosk-yourname.vercel.app/api/chat"
+const BACKEND_URL = "https://YOUR-PROJECT-NAME.vercel.app/api/chat";
+
+async function callClaude(system, messages) {
+  const res = await fetch(BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ system, messages }),
+  });
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status}: ${errBody.slice(0, 200)}`);
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error?.message || JSON.stringify(data.error));
+  return (data.content || []).map(b => b.text || "").join("");
+}
+
+function extractJson(text) {
+  const cleaned = String(text).replace(/```json/gi, "").replace(/```/g, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) return null;
+  try { return JSON.parse(cleaned.slice(start, end + 1)); } catch { return null; }
+}
+
+function speak(text, lang) {
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang || "en-IN";
+    window.speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(",")[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+const LANGUAGES = [
+  { code: "en-IN", label: "English" },
+  { code: "hi-IN", label: "हिंदी (Hindi)" },
+  { code: "ta-IN", label: "தமிழ் (Tamil)" },
+  { code: "bn-IN", label: "বাংলা (Bengali)" },
+  { code: "mr-IN", label: "मराठी (Marathi)" },
+];
+
+const COMPLAINTS = [
+  { id: "Chest pain", label: "Chest Pain", icon: "❤️" },
+  { id: "Fever", label: "Fever", icon: "🌡️" },
+  { id: "Cough / cold", label: "Cough / Cold", icon: "🌬️" },
+  { id: "Headache", label: "Headache", icon: "🧠" },
+  { id: "Joint / body pain", label: "Joint / Body Pain", icon: "🦴" },
+  { id: "Something else", label: "Something Else", icon: "❓" },
+];
+
+const STEPS = ["Identify", "Converse", "Scan", "Summarize", "Consult"];
+
+const FIELD_LABELS = [
+  ["chiefComplaint", "Chief Complaint"],
+  ["hpi", "History of Present Illness"],
+  ["pastHistory", "Past Medical / Surgical History"],
+  ["drugAllergyHistory", "Drug & Allergy History"],
+  ["familyHistory", "Family History"],
+  ["personalHistory", "Personal History"],
+  ["reviewOfSystems", "Review of Systems"],
+  ["priorInvestigationsSummary", "Prior Investigations Summary"],
+];
+
+/* ---------------------------- global state ---------------------------- */
+const S = {
+  screen: "login",
+  lang: LANGUAGES[0],
+  ayush: false,
+  abhaId: "", name: "", age: "",
+  consent: { history: false, documents: false, share: false },
+  chiefComplaint: "", otherComplaint: "",
+  turns: [], interviewDone: false, redFlags: [],
+  userInput: "", busy: false, listening: false, audioOn: true,
+  docs: [], summary: null, tokenNo: "",
+  physicianList: [], selectedPatientId: null, error: "",
+};
+let recognition = null;
+
+function setState(patch) { Object.assign(S, patch); render(); }
+
+/* ------------------------------ interview ------------------------------ */
+
+function interviewSystem() {
+  return `You are the MediKiosk clinical history assistant conducting a brief structured pre-consultation interview with a patient at an Indian ${S.ayush ? "AYUSH (Ayurveda) outpatient department" : "general outpatient department"}.
+Chief complaint: "${S.chiefComplaint}".
+Ask ONE short, simple, warm question at a time, written in ${S.lang.label}. For pain/symptom complaints use the SOCRATES framework (site, onset, character, radiation, associations, timing, exacerbating/relieving factors, severity). Also cover, briefly and one at a time: past medical/surgical history, current medications & known allergies, family history, personal/social history (diet, smoking, alcohol), and a short review of systems.
+${S.ayush ? "Also gently probe, in plain language (not Sanskrit jargon unless the patient uses it): body constitution and digestion strength (Agni), bowel nature (Koshtha), likely triggers (Nidana), and daily diet/lifestyle (Ahara-Vihara)." : ""}
+If the patient describes a possible emergency red-flag symptom (e.g. crushing chest pain with breathlessness or sweating, sudden severe/worst-ever headache, one-sided weakness or slurred speech, severe bleeding, fainting, severe difficulty breathing), set "redFlag" to a short English description of it — but still respond calmly and continue.
+After roughly 6-8 exchanges, once you have a reasonably complete picture, set "complete" to true and make "message" a brief warm closing line thanking the patient and telling them to proceed to document scanning.
+Respond ONLY with compact JSON and nothing else: {"message": "<next question or closing line, written in ${S.lang.label}>", "redFlag": null or "<short description in English>", "complete": false or true}`;
+}
+
+async function driveInterview(nextTurns) {
+  setState({ busy: true, error: "" });
+  try {
+    const apiMessages = nextTurns.map(t => ({ role: t.role, content: t.text }));
+    const raw = await callClaude(interviewSystem(), apiMessages);
+    const parsed = extractJson(raw);
+    if (!parsed) throw new Error("bad_json");
+    S.turns.push({ role: "assistant", text: parsed.message });
+    if (S.audioOn) speak(parsed.message, S.lang.code);
+    if (parsed.redFlag && !S.redFlags.includes(parsed.redFlag)) S.redFlags.push(parsed.redFlag);
+    if (parsed.complete) S.interviewDone = true;
+    setState({ busy: false });
+  } catch (e) {
+    setState({ busy: false, error: describeError(e) });
+  }
+}
+
+function describeError(e) {
+  const msg = String(e?.message || e);
+  if (msg.includes("YOUR-PROJECT-NAME")) {
+    return "The app isn't connected to a backend yet — open the DEPLOY_README, deploy the backend, then update BACKEND_URL near the top of the script to your deployed URL.";
+  }
+  if (msg.includes("401") || msg.includes("403")) {
+    return "The backend rejected the request. Check that ANTHROPIC_API_KEY is set correctly in your backend host's environment variables.";
+  }
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) {
+    return "Couldn't reach the backend server. Check your internet connection and that BACKEND_URL points to a live, deployed server.";
+  }
+  return "AI request failed: " + msg;
+}
+
+function startInterview() {
+  const kickoff = [{ role: "user", text: `Begin the interview for chief complaint: ${S.chiefComplaint}.`, hidden: true }];
+  S.turns = kickoff;
+  driveInterview(kickoff);
+}
+
+function sendReply() {
+  const text = S.userInput.trim();
+  if (!text) return;
+  S.turns.push({ role: "user", text });
+  S.userInput = "";
+  driveInterview(S.turns);
+}
+
+function toggleListening() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setState({ error: "Voice input isn't available in this browser — please type your answer instead." }); return; }
+  if (S.listening) { recognition?.stop(); setState({ listening: false }); return; }
+  recognition = new SR();
+  recognition.lang = S.lang.code;
+  recognition.interimResults = false;
+  recognition.onresult = (ev) => setState({ userInput: ev.results[0][0].transcript });
+  recognition.onend = () => setState({ listening: false });
+  recognition.onerror = () => setState({ listening: false });
+  setState({ listening: true });
+  recognition.start();
+}
+
+/* --------------------------- document scanning -------------------------- */
+
+const DOC_SYSTEM = `You are a medical-document digitization AI reading a photo of an Indian patient's prior prescription, lab report, or discharge summary — it may be handwritten or printed, in English or Hindi. Extract structured data, using your best judgement for normal reference ranges to flag abnormal values. Respond ONLY with compact JSON and nothing else:
+{"docType": "prescription|lab_report|discharge_summary|other", "date": "<date found or null>", "diagnoses": ["..."], "medications": [{"name":"","dose":""}], "investigations": [{"name":"","value":"","unit":"","normalRange":"","abnormal": true|false}], "summary": "<one plain-English sentence summarizing this document>"}`;
+
+async function handleUpload(fileList) {
+  const files = Array.from(fileList).slice(0, 4);
+  for (const file of files) {
+    const data = await fileToBase64(file);
+    const previewUrl = URL.createObjectURL(file);
+    const entry = { id: Math.random().toString(36).slice(2), previewUrl, mediaType: file.type || "image/jpeg", data, extracted: null, status: "processing" };
+    S.docs.push(entry);
+    render();
+    try {
+      const raw = await callClaude(DOC_SYSTEM, [
+        { role: "user", content: [
+          { type: "image", source: { type: "base64", media_type: entry.mediaType, data: entry.data } },
+          { type: "text", text: "Extract the structured clinical data from this document. Respond only with JSON." },
+        ]},
+      ]);
+      const parsed = extractJson(raw) || { summary: "Could not read this document automatically.", investigations: [], medications: [], diagnoses: [] };
+      entry.extracted = parsed; entry.status = "done";
+    } catch (e) { entry.status = "error"; S.error = describeError(e); }
+    render();
+  }
+}
+
+/* ----------------------------- summary logic ----------------------------- */
+
+function summarySystem() {
+  return `You are generating a concise physician-ready structured clinical history summary for an Indian OPD${S.ayush ? " (AYUSH / Ayurveda)" : ""} consultation, from a patient interview transcript and digitized prior documents. Write in clinical English, brief enough for a doctor to read in under 15 seconds. Respond ONLY with compact JSON and nothing else:
+{"chiefComplaint":"", "hpi":"", "pastHistory":"", "drugAllergyHistory":"", "familyHistory":"", "personalHistory":"", "reviewOfSystems":"", "priorInvestigationsSummary":""${S.ayush ? ', "ayushAssessment":"<Prakriti/Agni/Koshtha impressions>"' : ""}}`;
+}
+
+async function generateSummary() {
+  setState({ busy: true, error: "" });
+  try {
+    const payload = {
+      chiefComplaint: S.chiefComplaint,
+      transcript: S.turns.filter(t => !t.hidden).map(t => `${t.role}: ${t.text}`),
+      redFlags: S.redFlags,
+      documents: S.docs.filter(d => d.extracted).map(d => d.extracted),
+    };
+    const raw = await callClaude(summarySystem(), [{ role: "user", content: JSON.stringify(payload) }]);
+    const parsed = extractJson(raw);
+    if (!parsed) throw new Error("bad_json");
+    setState({ busy: false, summary: parsed, screen: "summary" });
+  } catch (e) {
+    setState({ busy: false, error: describeError(e) });
+  }
+}
+
+async function confirmAndPush() {
+  const id = "PT-" + Date.now().toString(36).toUpperCase();
+  const tok = "A" + String(100 + Math.floor(Math.random() * 800));
+  const record = {
+    id, token: tok, name: S.name || "Patient", age: S.age, abhaId: S.abhaId, lang: S.lang.label, ayush: S.ayush,
+    chiefComplaint: S.chiefComplaint, redFlags: S.redFlags, summary: S.summary,
+    documents: S.docs.map(d => ({ extracted: d.extracted })),
+    status: "pending", submittedAt: new Date().toISOString(),
+  };
+  try { await window.storage.set("patients:" + id, JSON.stringify(record), true); } catch (e) {}
+  setState({ tokenNo: tok, screen: "confirmation" });
+}
+
+/* --------------------------- physician console --------------------------- */
+
+async function loadPhysicianList() {
+  setState({ busy: true });
+  try {
+    const keys = await window.storage.list("patients:", true);
+    const list = [];
+    for (const k of (keys?.keys || [])) {
+      try { const r = await window.storage.get(k, true); if (r) list.push(JSON.parse(r.value)); } catch (e) {}
+    }
+    list.sort((a, b) => (a.submittedAt < b.submittedAt ? 1 : -1));
+    setState({ busy: false, physicianList: list });
+  } catch {
+    setState({ busy: false, error: "Could not load the patient queue." });
+  }
+}
+
+async function acceptPatient(id) {
+  const record = S.physicianList.find(p => p.id === id);
+  const updated = { ...record, status: "accepted" };
+  await window.storage.set("patients:" + id, JSON.stringify(updated), true);
+  S.physicianList = S.physicianList.map(p => p.id === id ? updated : p);
+  render();
+}
+
+function togglePhysicianScreen() {
+  if (S.screen === "physician") { setState({ screen: "login" }); }
+  else { setState({ screen: "physician" }); loadPhysicianList(); }
+}
+
+function resetAll() {
+  Object.assign(S, {
+    screen: "login", abhaId: "", name: "", age: "",
+    consent: { history: false, documents: false, share: false },
+    chiefComplaint: "", otherComplaint: "", turns: [], interviewDone: false,
+    redFlags: [], userInput: "", docs: [], summary: null, error: "",
+  });
+  render();
+}
+
+/* -------------------------------- render -------------------------------- */
+
+function esc(s) { return (s || "").replace(/"/g, "&quot;"); }
+
+function stepIndexFor(screen) {
+  return { login:0, consent:0, chief:0, interview:1, documents:2, summary:3, confirmation:3, physician:4 }[screen] ?? 0;
+}
+
+function renderStepper() {
+  const current = stepIndexFor(S.screen);
+  return `<div class="stepper">${STEPS.map((s,i)=>{
+    const cls = i===current ? "active" : i<current ? "done" : "";
+    return `<div class="step ${cls}">${i<current?"✔ ":""}${i+1}. ${s}</div>` + (i<STEPS.length-1?'<div class="step-line"></div>':'');
+  }).join("")}</div>`;
+}
+
+function renderLogin() {
+  return `<div class="card">
+    <h1>Welcome to MediKiosk</h1>
+    <p class="muted">Let's get your visit ready before you see the doctor.</p>
+    <label class="field-label">Preferred language</label>
+    <div class="chip-group">${LANGUAGES.map(l=>`<button class="chip ${S.lang.code===l.code?'active':''}" onclick="setState({lang: ${JSON.stringify(l).replace(/"/g,'&quot;')}})">${l.label}</button>`).join("")}</div>
+    <div class="row" style="margin-bottom:16px;">
+      <div><label class="field-label">Full name</label><input type="text" value="${esc(S.name)}" oninput="S.name=this.value" placeholder="e.g. Radha Devi"/></div>
+      <div><label class="field-label">Age</label><input type="number" value="${esc(S.age)}" oninput="S.age=this.value" placeholder="e.g. 58"/></div>
+    </div>
+    <label class="field-label">🪪 ABHA ID or Aadhaar (optional)</label>
+    <input type="text" value="${esc(S.abhaId)}" oninput="S.abhaId=this.value" placeholder="14-digit ABHA number, or leave blank to register fresh" style="margin-bottom:18px;"/>
+    <div class="checkbox-row"><input type="checkbox" ${S.ayush?"checked":""} onchange="setState({ayush:this.checked})"/> 🌿 This is an AYUSH / Ayurveda OPD visit (adds Dashavidha Pariksha questions)</div>
+    <button class="btn-primary" onclick="setState({screen:'consent'})">Continue →</button>
+  </div>`;
+}
+
+function renderConsent() {
+  const allChecked = S.consent.history && S.consent.documents && S.consent.share;
+  return `<div class="card">
+    <h1>🛡️ Your consent, in your control</h1>
+    <p class="muted">In line with the Digital Personal Data Protection Act, 2023 and the ABDM consent framework, you decide what MediKiosk may do with your health information. You can withdraw consent at any time at the front desk.</p>
+    <button class="link-btn" style="margin-bottom:14px;" onclick="speak('Please review and accept each consent to continue. You can change your choice any time.', '${S.lang.code}')">🔊 Play this out loud</button>
+    <div class="consent-row"><input type="checkbox" ${S.consent.history?"checked":""} onchange="S.consent.history=this.checked;render()"/><span>Record my spoken and typed answers to build my medical history</span></div>
+    <div class="consent-row"><input type="checkbox" ${S.consent.documents?"checked":""} onchange="S.consent.documents=this.checked;render()"/><span>Scan and digitize the physical documents I upload</span></div>
+    <div class="consent-row"><input type="checkbox" ${S.consent.share?"checked":""} onchange="S.consent.share=this.checked;render()"/><span>Share the structured summary with this hospital's records system and link it to my ABHA account</span></div>
+    <p class="muted" style="font-size:12px;">Session data is cleared from this kiosk immediately after your summary is submitted.</p>
+    <button class="btn-primary" ${allChecked?"":"disabled"} onclick="setState({screen:'chief'})">I Agree — Continue →</button>
+  </div>`;
+}
+
+function renderChief() {
+  const canContinue = S.chiefComplaint && (S.chiefComplaint !== "Something else" || S.otherComplaint.trim());
+  return `<div class="card">
+    <h1>What brings you in today?</h1>
+    <p class="muted">Tap the option closest to your main problem.</p>
+    <div class="complaint-grid">${COMPLAINTS.map(c=>`
+      <button class="complaint-btn ${S.chiefComplaint===c.id?'active':''}" onclick="setState({chiefComplaint:'${c.id}'})">
+        <span class="complaint-icon">${c.icon}</span>${c.label}
+      </button>`).join("")}</div>
+    ${S.chiefComplaint==="Something else" ? `<input type="text" value="${esc(S.otherComplaint)}" oninput="S.otherComplaint=this.value" placeholder="Briefly describe your problem" style="margin-bottom:16px;"/>` : ""}
+    <button class="btn-primary" ${canContinue?"":"disabled"} onclick="
+      if(S.chiefComplaint==='Something else'){S.chiefComplaint=S.otherComplaint||'Unspecified complaint';}
+      setState({screen:'interview'}); startInterview();
+    ">Start My History →</button>
+  </div>`;
+}
+
+function renderInterview() {
+  const visibleTurns = S.turns.filter(t => !t.hidden);
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h1 style="margin:0;font-size:17px;">📋 Talking with MediKiosk</h1>
+      <label style="font-size:12px;color:#64748b;"><input type="checkbox" ${S.audioOn?"checked":""} onchange="S.audioOn=this.checked"/> Read aloud</label>
+    </div>
+    <div class="chat-window" id="chatWindow">
+      ${visibleTurns.map(t=>`<div class="bubble ${t.role==='assistant'?'ai':'user'}">${t.text}</div>`).join("")}
+      ${S.busy ? `<div class="thinking">⏳ thinking…</div>` : ""}
+    </div>
+    ${!S.interviewDone ? `
+      <div class="input-row">
+        <button class="mic-btn ${S.listening?'listening':''}" onclick="toggleListening()">${S.listening?'⏹️':'🎤'}</button>
+        <input class="pill-input" type="text" value="${esc(S.userInput)}" oninput="S.userInput=this.value" onkeydown="if(event.key==='Enter')sendReply()" placeholder="Type or tap the mic to speak…" ${S.busy?"disabled":""}/>
+        <button class="send-btn" ${S.busy||!S.userInput.trim()?"disabled":""} onclick="sendReply()">→</button>
+      </div>` : `
+      <button class="btn-primary" onclick="setState({screen:'documents'})">Continue to Document Scanning →</button>`}
+  </div>`;
+}
+
+function renderDocuments() {
+  return `<div class="card">
+    <h1>📷 Scan your old reports</h1>
+    <p class="muted">Upload photos of prior prescriptions, lab reports, or discharge summaries. This step is optional — you can skip it if you have none.</p>
+    <label class="upload-zone">⬆️ Tap to upload photos (up to 4)<input type="file" accept="image/*" multiple onchange="if(this.files.length)handleUpload(this.files)"/></label>
+    ${S.docs.map(d=>`
+      <div class="doc-item">
+        <img src="${d.previewUrl}" alt="document"/>
+        <div style="flex:1;">
+          ${d.status==='processing' ? `<div class="thinking">⏳ Reading document…</div>` : ""}
+          ${d.status==='error' ? `<div style="color:#dc2626;">Couldn't read this file — try a clearer photo.</div>` : ""}
+          ${d.status==='done' && d.extracted ? `
+            <div style="font-weight:600;color:var(--teal-900);text-transform:capitalize;">${(d.extracted.docType||'document').replace(/_/g,' ')} ${d.extracted.date?('· '+d.extracted.date):''}</div>
+            <div style="color:#475569;font-size:13px;">${d.extracted.summary||''}</div>
+            ${(d.extracted.investigations||[]).some(i=>i.abnormal) ? `<div class="doc-flag">⚠️ Abnormal value(s) detected</div>` : ""}
+          ` : ""}
+        </div>
+      </div>`).join("")}
+    <button class="btn-primary" ${S.busy?"disabled":""} onclick="generateSummary()">${S.busy?'⏳':'📄'} Generate My Clinical Summary</button>
+  </div>`;
+}
+
+function renderSummary() {
+  const sm = S.summary;
+  return `<div class="card">
+    <h1>📄 Your Clinical Summary</h1>
+    <p class="muted">Please review — you can edit anything before it's sent to your doctor.</p>
+    <button class="link-btn" style="margin-bottom:14px;" onclick="speak('${esc((sm.chiefComplaint||'')+'. '+(sm.hpi||''))}', '${S.lang.code}')">🔊 Play back in ${S.lang.label}</button>
+    ${FIELD_LABELS.map(([key,label])=>`
+      <label class="field-label">${label}</label>
+      <textarea rows="2" oninput="S.summary['${key}']=this.value" style="margin-bottom:12px;">${esc(sm[key])}</textarea>
+    `).join("")}
+    ${S.ayush ? `
+      <label class="field-label">AYUSH Assessment (Prakriti / Agni / Koshtha)</label>
+      <textarea rows="2" oninput="S.summary['ayushAssessment']=this.value" style="margin-bottom:12px;">${esc(sm.ayushAssessment)}</textarea>
+    ` : ""}
+    <button class="btn-primary" onclick="confirmAndPush()">✅ Confirm & Push to Hospital Records</button>
+  </div>`;
+}
+
+function renderConfirmation() {
+  return `<div class="card center">
+    <div style="font-size:48px;">✅</div>
+    <h1>You're all set</h1>
+    <p class="muted">Your history has been sent to your doctor's screen and linked to your ABHA record.</p>
+    <div class="token-box">TOKEN ${S.tokenNo}</div>
+    <p class="muted" style="font-size:12px;">Please take a seat — you'll be called by this token number.</p>
+    <button class="link-btn" onclick="resetAll()">🔄 Start a new patient (demo)</button>
+  </div>`;
+}
+
+function renderPhysician() {
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h1 style="margin:0;font-size:17px;">🏥 Physician Console</h1>
+      <button class="link-btn" onclick="loadPhysicianList()">Refresh</button>
+    </div>
+    ${S.busy ? `<div class="thinking">⏳ Loading queue…</div>` : ""}
+    ${!S.busy && S.physicianList.length===0 ? `<p class="muted">No patient summaries submitted yet.</p>` : ""}
+    ${S.physicianList.map(p=>{
+      const open = S.selectedPatientId===p.id;
+      return `<div class="queue-item">
+        <div class="queue-head" onclick="setState({selectedPatientId: ${open? "null" : `'${p.id}'`}})">
+          <div>
+            <div style="font-weight:600;color:var(--teal-900);">👤 ${p.name} · Token ${p.token} ${p.redFlags&&p.redFlags.length?'⚠️':''}</div>
+            <div style="font-size:12px;color:#64748b;">${p.chiefComplaint} · ${p.status}</div>
+          </div>
+          <div>${open?'▾':'▸'}</div>
+        </div>
+        ${open && p.summary ? `<div class="queue-body">
+          ${p.redFlags && p.redFlags.length ? `<div style="color:#dc2626;font-weight:700;font-size:12px;">⚠️ ${p.redFlags.join('; ')}</div>` : ""}
+          ${FIELD_LABELS.map(([key,label])=> p.summary[key] ? `<div class="field-line"><b>${label}:</b> ${p.summary[key]}</div>` : "").join("")}
+          ${p.summary.ayushAssessment ? `<div class="field-line"><b>AYUSH Assessment:</b> ${p.summary.ayushAssessment}</div>` : ""}
+          ${p.status!=='accepted' ? `<button class="btn-primary" style="width:auto;margin-top:10px;" onclick="acceptPatient('${p.id}')">✔ Accept & Save to EMR</button>` : `<div style="color:#059669;font-weight:600;font-size:13px;margin-top:10px;">✅ Saved to EMR</div>`}
+        </div>` : ""}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function render() {
+  const app = document.getElementById("app");
+  let body = "";
+  if (S.screen === "login") body = renderLogin();
+  else if (S.screen === "consent") body = renderConsent();
+  else if (S.screen === "chief") body = renderChief();
+  else if (S.screen === "interview") body = renderInterview();
+  else if (S.screen === "documents") body = renderDocuments();
+  else if (S.screen === "summary" && S.summary) body = renderSummary();
+  else if (S.screen === "confirmation") body = renderConfirmation();
+  else if (S.screen === "physician") body = renderPhysician();
+
+  app.innerHTML = `
+    <div class="header">
+      <div class="brand">
+        <div class="brand-icon">🩺</div>
+        <div><div class="brand-title">MediKiosk</div><div class="brand-sub">AI Clinical Intake · Ministry of Ayush</div></div>
+      </div>
+      <button class="btn-ghost" onclick="togglePhysicianScreen()">${S.screen==='physician' ? 'Exit Console' : 'Physician Console'}</button>
+    </div>
+    ${renderStepper()}
+    ${S.redFlags.length>0 && S.screen!=='physician' ? `<div class="alert-red">⚠️ Priority alert flagged for triage staff: ${S.redFlags[S.redFlags.length-1]}</div>` : ""}
+    ${S.error ? `<div class="alert-amber">${S.error}<span style="cursor:pointer;" onclick="setState({error:''})">✖</span></div>` : ""}
+    ${body}
+  `;
+  const chatWindow = document.getElementById("chatWindow");
+  if (chatWindow) chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+render();
+</script>
+</body>
+</html>
