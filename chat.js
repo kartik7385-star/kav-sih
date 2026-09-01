@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`, // set this in Vercel's dashboard, never in code
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
         model: "mixtral-8x7b-32768",
@@ -28,7 +28,6 @@ module.exports = async (req, res) => {
       }),
     });
     const data = await apiRes.json();
-    // Groq returns { choices: [{ message: { content: "..." } }] }
     const content = data.choices?.[0]?.message?.content || "";
     res.status(apiRes.status).json({ 
       content: [{ type: "text", text: content }],

@@ -5,7 +5,7 @@ Firefox, Edge) without anyone ever seeing or entering a key.
 
 ## How it fits together
 
-```
+```text
 Patient's phone/laptop (medikiosk.html)
         │  sends {system, messages} — no key attached
         ▼
@@ -46,9 +46,11 @@ Anthropic API
 
 6. **Point the app at it.** Open `medikiosk.html`, find this line near
    the top of the `<script>`:
+
    ```js
    const BACKEND_URL = "https://YOUR-PROJECT-NAME.vercel.app/api/chat";
    ```
+
    Replace it with your real URL from step 5, save the file.
 
 7. **Done.** Re-open `medikiosk.html` on any device/browser — it will
