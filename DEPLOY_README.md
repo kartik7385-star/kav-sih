@@ -75,8 +75,6 @@ upgrade path is routing voice through a server-side speech-to-text
 service (e.g. Bhashini or Whisper) via the same backend, so recording
 works the same everywhere — happy to build that next if useful for
 your submission.
-
-
 ## What was fixed in this version
 
 - The frontend and backend now use the same Anthropic Messages API format.
