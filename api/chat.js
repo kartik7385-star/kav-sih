@@ -1,6 +1,5 @@
 // MediKiosk backend proxy — deploy this on Vercel (or any Node host).
-// It holds your Anthropic API key server-side so the app on people's
-// phones/laptops never needs to know it.
+// It keeps the Groq API key server-side so the app never exposes it.
 
 module.exports = async (req, res) => {
   // Allow the static app (on any device/browser) to call this endpoint.
